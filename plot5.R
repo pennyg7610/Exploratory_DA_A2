@@ -14,14 +14,13 @@ summarySCC_PM25 <- readRDS("~/Coursera/Exploratory_DA_A2/summarySCC_PM25.rds")
 Source_Classification_Code <- readRDS("~/Coursera/Exploratory_DA_A2/Source_Classification_Code.rds")
 
 ##clean the file 
-unique(Source_Classification_Code$EI.Sector)
-#filter out "Coal"
-coal<- Source_Classification_Code[Source_Classification_Code$EI.Sector %like% "- Coal",]
-#left Join DTs to get emission info
-coalemiss<- left_join(coal, summarySCC_PM25, by= "SCC")
+mveh<- inner_join(Source_Classification_Code, summarySCC_PM25, by="SCC")
+baltfil<-subset(mveh, mveh$fips == "24510")
+veh<- baltfil[baltfil$EI.Sector %like% "Vehicles",]
+#same result 
+veh<- subset(veh, veh$type == "ON-ROAD")
 
-
-coalEY<-aggregate(Emissions ~ year , coalemiss, sum)
+balvehemiss<-aggregate(Emissions ~ year , veh, sum)
 
 #making the plot
 #  Open png file
@@ -29,7 +28,7 @@ png("plot5.png", width = 480, height = 480)
 
 # Create the plot
 
-plot(coalEY$year, coalEY$Emissions, type = "o", main = expression("Coal Emissions by Year"), ylab = expression("Total Coal Emissions"), xlab = "Year")
+plot(balvehemiss$year, balvehemiss$Emissions, type = "o", main = expression("Baltimore Vehicle Emissions by Year"), ylab = expression("Total Vehicle Emissions"), xlab = "Year")
 
 # Close the file
 dev.off()
